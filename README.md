@@ -28,7 +28,7 @@ Kitchen Assistant is a personal tool for managing what's in the kitchen and maki
 | Backend | Python, FastAPI |
 | Database | SQLite |
 | Frontend | React |
-| AI | Anthropic API (Claude) |
+| AI | AWS Bedrock (Claude) |
 
 ## Getting Started
 
