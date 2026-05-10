@@ -12,7 +12,8 @@ Stand up a minimal FastAPI backend with a single `/health` endpoint. No database
 kitchen-assistant/
 ├── backend/
 │   ├── main.py           # FastAPI app entry point
-│   └── requirements.txt  # Python dependencies
+│   ├── pyproject.toml    # Project metadata and dependencies
+│   └── uv.lock           # Pinned dependency lockfile (committed)
 ├── docs/
 │   └── plans/
 │       └── m0-step1-fastapi-scaffold.md
@@ -24,13 +25,21 @@ kitchen-assistant/
 
 ## Files to create
 
-### `backend/requirements.txt`
+### `backend/pyproject.toml`
 
-```
-fastapi>=0.111.0
-uvicorn[standard]>=0.29.0
+```toml
+[project]
+name = "kitchen-assistant-backend"
+version = "0.1.0"
+requires-python = ">=3.13"
+dependencies = [
+    "fastapi>=0.111.0",
+    "uvicorn[standard]>=0.29.0",
+]
 ```
 
+- **pyproject.toml** — the standard Python project manifest. `uv` reads dependencies from here rather than a `requirements.txt`.
+- **uv.lock** — generated automatically by `uv`; pins every transitive dependency to an exact version. Committed to the repo so installs are reproducible across machines.
 - **FastAPI** — the web framework. Chosen for automatic OpenAPI docs, async support, and clean route definitions.
 - **uvicorn** — the ASGI server that actually runs FastAPI. The `[standard]` extra adds WebSocket and HTTP/2 support we'll want later.
 
@@ -60,20 +69,16 @@ def health():
 
 ## How to run it
 
-Dependencies are managed with `uv` to keep the system Python clean.
-
 ```bash
 cd backend
-uv venv          # creates .venv/ inside backend/
-uv pip install -r requirements.txt
-source .venv/bin/activate
-uvicorn main:app --reload
+uv run uvicorn main:app --reload
 ```
 
-- `uv venv` — creates an isolated virtual environment in `backend/.venv/`.
-- `uv pip install` — installs into that venv without touching system Python.
+- `uv run` — automatically creates and activates `.venv/`, syncs dependencies from `uv.lock`, then runs the command. No manual `source .venv/bin/activate` needed.
 - `main:app` — tells uvicorn to look in `main.py` for the object named `app`.
 - `--reload` — restarts the server automatically when you save a file. Development only.
+
+To add a new dependency: `uv add <package>` — updates `pyproject.toml` and regenerates `uv.lock`.
 
 Once running, three URLs are available:
 - `http://localhost:8000/health` — the endpoint we built
@@ -88,6 +93,8 @@ Once running, three URLs are available:
 curl http://localhost:8000/health
 # {"status":"ok"}
 ```
+
+The Swagger UI at `http://localhost:8000/docs` is also worth opening once — it shows every route the API exposes and lets you call them interactively.
 
 ---
 
